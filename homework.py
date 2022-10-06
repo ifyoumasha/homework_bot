@@ -2,12 +2,11 @@ from asyncio.log import logger
 from http import HTTPStatus
 import logging
 import os
-from typing import Type
 import requests
 import telegram
 import time
 from dotenv import load_dotenv
-from exceptions import(
+from exceptions import (
     HTTPStatusErrorException,
     MessageException,
     NegativeValueException,
@@ -49,7 +48,7 @@ def send_message(bot, message):
         raise MessageException('Ошибка при отправке сообщения.') from error
     else:
         logger.info('Сообщение отправлено.')
-        
+
 
 def get_api_answer(current_timestamp):
     """Делает запрос к единственному эндпоинту API-сервиса."""
@@ -81,12 +80,13 @@ def check_response(response):
         raise TypeError('Объект не является списком.')
     return homeworks
 
+
 def parse_status(homework):
     """
     Извлекает из информации о конкретной домашней работе
     статус этой работы.
     """
-    if not isinstance (homework, dict):
+    if not isinstance(homework, dict):
         raise TypeError('Неизвестный тип.')
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
@@ -102,7 +102,7 @@ def check_tokens():
     Проверяет доступность переменных окружения,
     которые необходимы для работы программы.
     """
-    return all ([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def main():
