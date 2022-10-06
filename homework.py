@@ -82,10 +82,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """
-    Извлекает из информации о конкретной домашней работе
-    статус этой работы.
-    """
+    """Отправляет статус домашней работы."""
     if not isinstance(homework, dict):
         raise TypeError('Неизвестный тип.')
     homework_name = homework.get('homework_name')
@@ -98,10 +95,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """
-    Проверяет доступность переменных окружения, которые необходимы
-    для работы программы.
-    """
+    """Проверяет доступность переменных окружения."""
     return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
