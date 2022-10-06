@@ -1,5 +1,4 @@
 class MessageException(Exception):
-    """Ошибка при отправке сообщения в Telegram чат."""
     pass
 
 
