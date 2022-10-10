@@ -49,7 +49,7 @@ def send_message(bot, message):
     except telegram.TelegramError as error:
         raise MessageException('Ошибка при отправке сообщения.') from error
     else:
-        logger.info('Сообщение отправлено.') 
+        logger.info('Сообщение отправлено.')
 
 
 def get_api_answer(current_timestamp):
@@ -82,7 +82,7 @@ def check_response(response):
         raise TypeError('Объект не является словарём.')
     homeworks = response.get('homeworks')
     if homeworks is None:
-        raise KeyException(f'Oтсутствует ожидаемый ключ homeworks.')
+        raise KeyException('Oтсутствует ожидаемый ключ homeworks.')
     if not isinstance(homeworks, list):
         raise IndexError('Объект не является списком.')
     return homeworks
@@ -94,10 +94,10 @@ def parse_status(homework):
         raise TypeError('Объект не является словарём.')
     homework_name = homework.get('homework_name')
     if homework_name is None:
-        raise KeyError(f'Oтсутствует ожидаемый ключ homework_name.')
+        raise KeyError('Oтсутствует ожидаемый ключ homework_name.')
     homework_status = homework.get('status')
     if homework_status is None:
-        raise KeyException(f'Oтсутствует ожидаемый ключ homework_status.')
+        raise KeyException('Oтсутствует ожидаемый ключ homework_status.')
     if homework_status not in HOMEWORK_STATUSES:
         raise StatusException('Недокументированный статус домашней работы.')
     verdict = HOMEWORK_STATUSES[homework_status]
@@ -123,12 +123,12 @@ def main():
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
             if homework == []:
-                logger.debug('Отсутствует домашняя работа.') 
+                logger.debug('Отсутствует домашняя работа.')
             else:
                 if homework['date_updated'] != past_time:
                     past_time = homework['date_updated']
                     message = parse_status(homework)
-                    send_message(bot, message) 
+                    send_message(bot, message)
                 else:
                     logger.debug('Отсутствует новый статус домашней работы.')
             current_timestamp = response.get('current_data')
