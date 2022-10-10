@@ -1,27 +1,28 @@
-from asyncio.log import logger
-from http import HTTPStatus
 import logging
 import os
+import time
+from http import HTTPStatus
+
 import requests
 import telegram
-import time
 from dotenv import load_dotenv
-from exceptions import (
-    HTTPStatusErrorException,
-    MessageException,
-    NegativeValueException,
-    KeyException,
-    StatusException
-)
 
+from exceptions import (EndpointNotAvailableException,
+                        HTTPStatusErrorException,
+                        KeyException,
+                        MessageException,
+                        StatusException)
 
 load_dotenv()
 
 logging.basicConfig(
+    level=logging.DEBUG,
     filename='program.log',
     format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    filemode='w'
 )
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler(stream=None))
 
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -43,11 +44,12 @@ HOMEWORK_STATUSES = {
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат."""
     try:
+        logger.info('Бот начал отправлять сообщение.')
         bot.send_message(TELEGRAM_CHAT_ID, message)
-    except Exception as error:
+    except telegram.TelegramError as error:
         raise MessageException('Ошибка при отправке сообщения.') from error
     else:
-        logger.info('Сообщение отправлено.')
+        logger.info('Сообщение отправлено.') 
 
 
 def get_api_answer(current_timestamp):
@@ -55,16 +57,22 @@ def get_api_answer(current_timestamp):
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     try:
+        logger.info('Бот начал запрос к API.')
         homework_status = requests.get(
             ENDPOINT,
             headers=HEADERS,
             params=params
         )
-        if homework_status.status_code != HTTPStatus.OK:
-            logger.error('Страница недоступна.')
-            raise HTTPStatusErrorException('Страница недоступна.')
     except Exception as error:
-        raise NegativeValueException('Недоступность эндпоинта.') from error
+        raise EndpointNotAvailableException(
+            f'Недоступность эндпоинта {ENDPOINT}.'
+        ) from error
+    else:
+        if homework_status.status_code != HTTPStatus.OK:
+            logger.error(f'Страница недоступна {homework_status}.')
+            raise HTTPStatusErrorException(
+                f'Страница недоступна {homework_status}.'
+            )
     return homework_status.json()
 
 
@@ -74,22 +82,24 @@ def check_response(response):
         raise TypeError('Объект не является словарём.')
     homeworks = response.get('homeworks')
     if homeworks is None:
-        logger.error('Oтсутствует ожидаемый ключ.')
-        raise KeyException('Oтсутствует ожидаемый ключ.')
+        raise KeyException(f'Oтсутствует ожидаемый ключ homeworks.')
     if not isinstance(homeworks, list):
-        raise TypeError('Объект не является списком.')
+        raise IndexError('Объект не является списком.')
     return homeworks
 
 
 def parse_status(homework):
     """Отправляет статус домашней работы."""
     if not isinstance(homework, dict):
-        raise TypeError('Неизвестный тип.')
+        raise TypeError('Объект не является словарём.')
     homework_name = homework.get('homework_name')
+    if homework_name is None:
+        raise KeyError(f'Oтсутствует ожидаемый ключ homework_name.')
     homework_status = homework.get('status')
     if homework_status is None:
-        logger.error('Недокументированный статус.')
-        raise StatusException('Недокументированный статус.')
+        raise KeyException(f'Oтсутствует ожидаемый ключ homework_status.')
+    if homework_status not in HOMEWORK_STATUSES:
+        raise StatusException('Недокументированный статус домашней работы.')
     verdict = HOMEWORK_STATUSES[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
@@ -103,7 +113,7 @@ def main():
     """Основная логика работы бота."""
     if not check_tokens():
         logger.critical('Нет обязательных переменных окружения.')
-        raise NegativeValueException
+        raise SystemExit('Нет обязательных переменных окружения.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     past_time = ''
@@ -111,18 +121,20 @@ def main():
     while True:
         try:
             response = get_api_answer(current_timestamp)
-            homeworks = check_response(response)
-            for homework in homeworks:
+            homework = check_response(response)
+            if homework == []:
+                logger.debug('Отсутствует домашняя работа.') 
+            else:
                 if homework['date_updated'] != past_time:
                     past_time = homework['date_updated']
                     message = parse_status(homework)
-                    send_message(bot, message)
+                    send_message(bot, message) 
                 else:
-                    logger.debug('Отсутствует новый статус.')
-            current_timestamp = response('current_data')
+                    logger.debug('Отсутствует новый статус домашней работы.')
+            current_timestamp = response.get('current_data')
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            logger.error(message)
+            logger.error(message, exc_info=True)
             if message != message_error:
                 send_message(bot, message)
                 message_error = message
