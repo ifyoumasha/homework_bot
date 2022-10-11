@@ -68,7 +68,7 @@ def get_api_answer(current_timestamp):
     else:
         if homework_status.status_code != HTTPStatus.OK:
             raise HTTPStatusErrorException(
-                f'Страница недоступна {error}.'
+                f'Страница недоступна.'
                 f'Недоступны параметры запроса {ENDPOINT}, {params}.'
             )
     return homework_status.json()
