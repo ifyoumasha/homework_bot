@@ -1,43 +1,73 @@
 class MessageException(Exception):
     """Ошибка при отправке сообщения."""
-    pass
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
 
-def send_message(message):
-    if message is None:
-        raise MessageException('Ошибка при отправке сообщения.')
+    def __str__(self):
+        if self.message:
+            return 'MessageException' .format(self.message)
+        else:
+            return 'MessageException, ошибка при отправке сообщения.' 
 
 
 class EndpointNotAvailableException(Exception):
     """Недоступность эндпоинта."""
-    pass
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
 
-def endpoint_api(endpoint):
-    if endpoint is None:
-        raise EndpointNotAvailableException(f'Недоступность эндпоинта.')
+    def __str__(self):
+        if self.message:
+            return 'EndpointNotAvailableException' .format(self.message)
+        else:
+            return 'EndpointNotAvailableException, недоступность эндпоинта.' 
 
 
 class HTTPStatusErrorException(Exception):
     """Страница недоступна."""
-    pass
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
 
-def page_bot(page):
-    if page is None:
-        raise HTTPStatusErrorException(f'Страница недоступна.')
+    def __str__(self):
+        if self.message:
+            return 'HTTPStatusErrorException' .format(self.message)
+        else:
+            return 'HTTPStatusErrorException, страница недоступна.' 
 
 
 class KeyException(Exception):
-    """Oтсутствует ожидаемый ключ.'"""
-    pass
+    """Oтсутствует ожидаемый ключ."""
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
 
-def dictionary_key(key):
-    if key is None:
-        raise KeyException(f'Oтсутствует ожидаемый ключ.')
+    def __str__(self):
+        if self.message:
+            return 'KeyException' .format(self.message)
+        else:
+            return 'KeyException, отсутствует ожидаемый ключ.' 
 
 
 class StatusException(Exception):
-    """Недокументированный статус домашней работы.'"""
-    pass
+    """Недокументированный статус домашней работы."""
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
 
-def status_page(status):
-    if status is None:
-        raise StatusException('Недокументированный статус домашней работы.')
+    def __str__(self):
+        if self.message:
+            return 'StatusException' .format(self.message)
+        else:
+            return 'StatusException, недокументированный статус домашней работы.'

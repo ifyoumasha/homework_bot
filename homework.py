@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import time
 from http import HTTPStatus
 
@@ -8,21 +9,17 @@ import telegram
 from dotenv import load_dotenv
 
 from exceptions import (EndpointNotAvailableException,
-                        HTTPStatusErrorException,
-                        KeyException,
-                        MessageException,
-                        StatusException)
+                        HTTPStatusErrorException, KeyException,
+                        MessageException, StatusException)
 
 load_dotenv()
 
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='program.log',
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    filemode='w'
+    format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.StreamHandler(stream=None))
+logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -44,7 +41,7 @@ HOMEWORK_STATUSES = {
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат."""
     try:
-        logger.info('Бот начал отправлять сообщение.')
+        logger.info(f'Бот начал отправлять сообщение {message}.')
         bot.send_message(TELEGRAM_CHAT_ID, message)
     except telegram.TelegramError as error:
         raise MessageException('Ошибка при отправке сообщения.') from error
@@ -65,13 +62,14 @@ def get_api_answer(current_timestamp):
         )
     except Exception as error:
         raise EndpointNotAvailableException(
-            f'Недоступность эндпоинта {ENDPOINT}.'
+            f'Сбои при запросе к эндпоинту {error}.'
+            f'Недоступны параметры запроса {ENDPOINT}, {params}.'
         ) from error
     else:
         if homework_status.status_code != HTTPStatus.OK:
-            logger.error(f'Страница недоступна {homework_status}.')
             raise HTTPStatusErrorException(
-                f'Страница недоступна {homework_status}.'
+                f'Страница недоступна {error}.'
+                f'Недоступны параметры запроса {ENDPOINT}, {params}.'
             )
     return homework_status.json()
 
@@ -112,8 +110,9 @@ def check_tokens():
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
-        logger.critical('Нет обязательных переменных окружения.')
-        raise SystemExit('Нет обязательных переменных окружения.')
+        error_tokens = 'Нет обязательных переменных окружения.'
+        logger.critical(error_tokens)
+        sys.exit(error_tokens)
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     past_time = ''
@@ -125,6 +124,7 @@ def main():
             if homework == []:
                 logger.debug('Отсутствует домашняя работа.')
             else:
+                homework = homework[0]
                 if homework['date_updated'] != past_time:
                     past_time = homework['date_updated']
                     message = parse_status(homework)
