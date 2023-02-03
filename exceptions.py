@@ -10,7 +10,7 @@ class MessageException(Exception):
         if self.message:
             return 'MessageException' .format(self.message)
         else:
-            return 'MessageException, ошибка при отправке сообщения.' 
+            return 'MessageException, ошибка при отправке сообщения.'
 
 
 class EndpointNotAvailableException(Exception):
@@ -25,7 +25,7 @@ class EndpointNotAvailableException(Exception):
         if self.message:
             return 'EndpointNotAvailableException' .format(self.message)
         else:
-            return 'EndpointNotAvailableException, недоступность эндпоинта.' 
+            return 'EndpointNotAvailableException, недоступность эндпоинта.'
 
 
 class HTTPStatusErrorException(Exception):
@@ -40,7 +40,7 @@ class HTTPStatusErrorException(Exception):
         if self.message:
             return 'HTTPStatusErrorException' .format(self.message)
         else:
-            return 'HTTPStatusErrorException, страница недоступна.' 
+            return 'HTTPStatusErrorException, страница недоступна.'
 
 
 class KeyException(Exception):
@@ -55,7 +55,7 @@ class KeyException(Exception):
         if self.message:
             return 'KeyException' .format(self.message)
         else:
-            return 'KeyException, отсутствует ожидаемый ключ.' 
+            return 'KeyException, отсутствует ожидаемый ключ.'
 
 
 class StatusException(Exception):
